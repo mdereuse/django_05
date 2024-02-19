@@ -3,5 +3,7 @@
 Ex02
 {% endblock title %}
 {% block content %}
-{{ message }}
+{% for message in message_lst %}
+<p>{{ message }}</p>
+{% endfor %}
 {% endblock content %}

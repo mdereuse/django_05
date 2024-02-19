@@ -53,7 +53,7 @@ def populate(request):
         \'{title}\',
         \'{director}\',
         \'{producer}\',
-        {release_date}
+        \'{release_date}\'
     );
     """
     movies_lst = [
@@ -111,17 +111,47 @@ def populate(request):
     conn = None
     try:
         conn = psycopg2.connect(**config)
-        with conn:
-            with conn.cursor() as curs:
-                curs.execute(sql_request)
+        for movie in movies_lst:
+            movie_sql_request = sql_request.format(
+                **movie
+            )
+            try:
+                with conn:
+                    with conn.cursor() as curs:
+                        curs.execute(movie_sql_request)
+            except Exception as e:
+                message_lst.append(movie["title"])
+                message_lst.append(str(e))
+            else:
+                message_lst.append(movie["title"])
+                message_lst.append("OK")
     except Exception as e:
-        message = e
-    else:
-        message_lst.append("OK\n")
+        message_lst = [str(e)]
     finally:
         if conn is not None:
             conn.close()
-    context = {"message": message}
-    return render(request, 'ex02/init.html', context)
+    context = {"message_lst": message_lst}
+    return render(request, 'ex02/populate.html', context)
 
-
+def display(request):
+    sql_request = """
+    SELECT * FROM ex02_movies;
+    """
+    conn = None
+    try:
+        conn = psycopg2.connect(**config)
+        with conn:
+            with conn.cursor() as curs:
+                curs.execute(sql_request)
+                movies = curs.fetchall()
+        context = {
+            "movies": movies
+        }
+    except Exception:
+        context = {
+            "error_message": "No data available"
+        }
+    finally:
+        if conn is not None:
+            conn.close()
+    return render(request, 'ex02/display.html', context)
