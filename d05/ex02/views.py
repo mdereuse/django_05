@@ -144,6 +144,8 @@ def display(request):
             with conn.cursor() as curs:
                 curs.execute(sql_request)
                 movies = curs.fetchall()
+        if len(movies) == 0:
+            raise Exception
         context = {
             "movies": movies
         }

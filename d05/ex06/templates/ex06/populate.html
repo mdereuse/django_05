@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}
+Ex06
+{% endblock title %}
+{% block content %}
+{% for message in message_lst %}
+<p>{{ message }}</p>
+{% endfor %}
+{% endblock content %}
+
+

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}
+Ex06
+{% endblock title %}
+{% block content %}
+{% if error_message %}
+{{ error_message }}
+{% else %}
+
+<table>
+	<thead>
+		<tr>
+			<th>title</th>
+			<th>episode_nb</th>
+			<th>opening_crawl</th>
+			<th>director</th>
+			<th>producer</th>
+			<th>release date</th>
+			<th>created</th>
+			<th>updated</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for movie in movies %}
+		<tr>
+			<td>{{ movie.0 }}</td>
+			<td>{{ movie.1 }}</td>
+			<td>{{ movie.2 }}</td>
+			<td>{{ movie.3 }}</td>
+			<td>{{ movie.4 }}</td>
+			<td>{{ movie.5 }}</td>
+			<td>{{ movie.6 }}</td>
+			<td>{{ movie.7 }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endif %}
+{% endblock content %}
+

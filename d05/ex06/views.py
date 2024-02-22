@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
-from .forms import RemoveMovieForm
 import psycopg2
+from .forms import UpdateMovieForm
 
 
 config = {
@@ -15,14 +15,27 @@ config = {
 
 def init(request):
     sql_request = """
-    CREATE TABLE IF NOT EXISTS ex04_movies (
+    CREATE TABLE IF NOT EXISTS ex06_movies (
         title           VARCHAR(64) UNIQUE NOT NULL,
         episode_nb      INT PRIMARY KEY,
         opening_crawl   TEXT,
         director        VARCHAR(32) NOT NULL,
         producer        VARCHAR(128) NOT NULL,
-        release_date    DATE NOT NULL
+        release_date    DATE NOT NULL,
+        created         TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated         TIMESTAMP NOT NULL DEFAULT NOW()
     );
+    CREATE OR REPLACE FUNCTION update_changetimestamp_column()
+    RETURNS TRIGGER AS $$
+    BEGIN
+    NEW.updated = now();
+    NEW.created = OLD.created;
+    RETURN NEW;
+    END;
+    $$ language 'plpgsql';
+    CREATE TRIGGER update_films_changetimestamp BEFORE UPDATE
+    ON ex06_movies FOR EACH ROW EXECUTE PROCEDURE
+    update_changetimestamp_column();
     """
     conn = None
     try:
@@ -36,14 +49,14 @@ def init(request):
         message = "OK"
     finally:
         if conn is not None:
-            conn.close()
+            conn.close
     context = {"message": message}
-    return render(request, 'ex04/init.html', context)
+    return render(request, 'ex06/init.html', context)
 
 
 def populate(request):
     sql_request = """
-    INSERT INTO ex04_movies (
+    INSERT INTO ex06_movies (
         episode_nb,
         title,
         director,
@@ -132,11 +145,12 @@ def populate(request):
         if conn is not None:
             conn.close()
     context = {"message_lst": message_lst}
-    return render(request, 'ex04/populate.html', context)
+    return render(request, 'ex06/populate.html', context)
+
 
 def display(request):
     sql_request = """
-    SELECT * FROM ex04_movies;
+    SELECT * FROM ex06_movies;
     """
     conn = None
     try:
@@ -157,13 +171,13 @@ def display(request):
     finally:
         if conn is not None:
             conn.close()
-    return render(request, 'ex04/display.html', context)
+    return render(request, 'ex06/display.html', context)
 
 
-def remove(request):
+def update(request):
     def get_choices():
         select_sql_request = """
-        SELECT title FROM ex04_movies;
+        SELECT title FROM ex06_movies;
         """
         conn = None
         try:
@@ -172,25 +186,30 @@ def remove(request):
                 with conn.cursor() as curs:
                     curs.execute(select_sql_request)
                     movies = curs.fetchall()
+            if len(movies) == 0:
+                raise Exception
+            return ((movie[0], movie[0]) for movie in movies)
         except Exception:
             raise
         finally:
             if conn is not None:
                 conn.close()
-        if len(movies) == 0:
-            raise Exception
-        return ((movie[0], movie[0]) for movie in movies)
 
-    def delete_movie(title):
-        delete_sql_request = """
-        DELETE FROM ex04_movies WHERE title = %s
+    def update_movie(title, opening_crawl):
+        update_sql_request = """
+        UPDATE ex06_movies
+        SET opening_crawl = %s
+        WHERE title = %s;
         """
         conn = None
         try:
             conn = psycopg2.connect(**config)
             with conn:
                 with conn.cursor() as curs:
-                    curs.execute(delete_sql_request, [title])
+                    curs.execute(
+                        update_sql_request,
+                        [opening_crawl, title]
+                    )
         except Exception:
             raise
         finally:
@@ -200,17 +219,21 @@ def remove(request):
     try:
         choices = get_choices()
         if request.method == 'POST':
-            form = RemoveMovieForm(choices, request.POST)
+            form = UpdateMovieForm(choices, request.POST)
             if form.is_valid():
-                delete_movie(form.cleaned_data['title'])
-            return redirect('ex04_remove')
+                update_movie(
+                    form.cleaned_data['title'],
+                    form.cleaned_data['opening_crawl']
+                )
+            return redirect('ex06_update')
         else:
-            form = RemoveMovieForm(choices)
+            form = UpdateMovieForm(choices)
             context = {
                 'form': form
             }
     except Exception as e:
+        print(e)
         context = {
             "error_message": "No data available"
         }
-    return render(request, 'ex04/remove.html', context)
+    return render(request, 'ex06/update.html', context)
