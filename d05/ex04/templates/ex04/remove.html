@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}
+Ex04
+{% endblock title %}
+{% block content %}
+{% if error_message %}
+{{ error_message }}
+{% else %}
+<h1>Remove movie</h1>
+<form method="post" action="">
+	{% csrf_token %}
+	{{ form.as_p }}
+	<input type="submit" value="remove"/>
+</form>
+{% endif %}
+{% endblock content %}

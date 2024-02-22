@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.conf import settings
+from .forms import RemoveMovieForm
 import psycopg2
 
 
@@ -158,7 +159,59 @@ def display(request):
 
 
 def remove(request):
-    if request.method == 'POST':
-        pass
-    else:
+    def get_choices():
+        select_sql_request = """
+        SELECT title FROM ex04_movies;
+        """
+        conn = None
+        try:
+            conn = psycopg2.connect(**config)
+            with conn:
+                with conn.cursor() as curs:
+                    curs.execute(select_sql_request)
+                    movies = curs.fetchall()
+        except Exception:
+            raise
+        finally:
+            if conn is not None:
+                conn.close()
+        if len(movies) == 0:
+            raise Exception
+        return ((movie[0], movie[0]) for movie in movies)
 
+    def delete_movie(title):
+        delete_sql_request = """
+        DELETE FROM ex04_movies WHERE title = %s
+        """
+        conn = None
+        try:
+            conn = psycopg2.connect(**config)
+            with conn:
+                with conn.cursor() as curs:
+                    curs.execute(delete_sql_request, [title])
+        except Exception:
+            raise
+        finally:
+            if conn is not None:
+                conn.close()
+
+    
+    try:
+        choices = get_choices()
+        if request.method == 'POST':
+            print("POSTPOSTPOST")
+            form = RemoveMovieForm(choices, request.POST)
+            if form.is_valid():
+                delete_movie(form.cleaned_data['title'])
+            return redirect('ex04_remove')
+        else:
+            form = RemoveMovieForm(choices)
+            context = {
+                'form': form
+            }
+    except Exception as e:
+        print(e)
+        context = {
+            "error_message": "No data available"
+        }
+    return render(request, 'ex04/remove.html', context)

@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Movies
+from .forms import RemoveMovieForm
 
 
 def populate(request):
@@ -70,7 +71,7 @@ def populate(request):
     context = {
         "message_lst": message_lst
     }
-    return render(request, 'ex03/populate.html', context)
+    return render(request, 'ex05/populate.html', context)
 
 
 def display(request):
@@ -86,4 +87,33 @@ def display(request):
         context = {
             "error_message": "No data available"
         }
-    return render(request, 'ex03/display.html', context)
+    return render(request, 'ex05/display.html', context)
+
+
+def remove(request):
+    def get_choices():
+        movies = Movies.objects.all()
+        if len(movies) == 0:
+            raise Exception
+        return ((movie.title, movie.title) for movie in movies)
+
+    try:
+        choices = get_choices()
+        if request.method == 'POST':
+            form = RemoveMovieForm(choices, request.POST)
+            if form.is_valid():
+                Movies.objects.get(title=form.cleaned_data['title']).delete()
+            return redirect('ex05_remove')
+        else:
+            form = RemoveMovieForm(choices)
+            context = {
+                'form': form,
+            }
+    except Exception:
+        context = {
+            "error_message": "No data available"
+        }
+    return render(request, 'ex05/remove.html', context)
+
+
+
