@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}
+Ex10
+{% endblock title %}
+{% block content %}
+{% if error_message %}
+{{ error_message }}
+{% else %}
+<h1>Search character</h1>
+<form method="post" action="">
+	{% csrf_token %}
+	{{ form.as_p }}
+	<input type="submit" value="update"/>
+</form>
+{% if results != None %}
+{% if results %}
+<table>
+	<thead>
+		<tr>
+			<th>name</th>
+			<th>gender</th>
+			<th>movie</th>
+			<th>homeworld</th>
+			<th>homeworld diameter</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for r in results %}
+		<tr>
+			<td>{{ r.name }}</td>
+			<td>{{ r.gender }}</td>
+			<td>{{ r.movie }}</td>
+			<td>{{ r.homeworld }}</td>
+			<td>{{ r.homeworld.diameter }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+
+{% else %}
+Nothing corresponding to your research
+{% endif %}
+{% endif %}
+{% endif %}
+{% endblock content %}
+
+
+

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'ex07.apps.Ex07Config',
     'ex08.apps.Ex08Config',
     'ex09.apps.Ex09Config',
+    'ex10.apps.Ex10Config',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
