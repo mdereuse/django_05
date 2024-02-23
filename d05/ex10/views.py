@@ -29,15 +29,13 @@ def index(request):
                                          'characters__name',
                                          'characters__homeworld__name',
                                          'characters__homeworld__diameter'))
-        print(results)
         return results
     
     try:
-        choices = get_choices()
         context = {}
         context['results'] = None
         if request.method == 'POST':
-            form = SearchPersonForm(choices, request.POST)
+            form = SearchPersonForm(get_choices(), request.POST)
             if form.is_valid():
                 results = get_results(
                     min_date=form.cleaned_data['min_movie_release_date'],
@@ -46,12 +44,11 @@ def index(request):
                     gender=form.cleaned_data['gender']
                 )
                 context['results'] = results
-        form = SearchPersonForm(choices)
+        form = SearchPersonForm(get_choices())
         context['form'] = form
     except Exception as e:
-        print(e)
         context = {
-            'error_message': 'Oups'
+            'error_message': 'No data available'
         }
     return render(request, 'ex10/index.html', context)
 
