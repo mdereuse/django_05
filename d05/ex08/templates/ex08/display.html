@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}
+Ex08
+{% endblock title %}
+{% block content %}
+{% if error_message %}
+{{ error_message }}
+{% else %}
+
+<table>
+	<thead>
+		<tr>
+			<th>name</th>
+			<th>planete name</th>
+			<th>climate</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for p in people %}
+		<tr>
+			<td>{{ p.0 }}</td>
+			<td>{{ p.1 }}</td>
+			<td>{{ p.2 }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endif %}
+{% endblock content %}
+
+
