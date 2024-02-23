@@ -17,9 +17,9 @@ Ex10
 <table>
 	<thead>
 		<tr>
+			<th>movie</th>
 			<th>name</th>
 			<th>gender</th>
-			<th>movie</th>
 			<th>homeworld</th>
 			<th>homeworld diameter</th>
 		</tr>
@@ -27,11 +27,11 @@ Ex10
 	<tbody>
 		{% for r in results %}
 		<tr>
-			<td>{{ r.name }}</td>
-			<td>{{ r.gender }}</td>
-			<td>{{ r.movie }}</td>
-			<td>{{ r.homeworld }}</td>
-			<td>{{ r.homeworld.diameter }}</td>
+			<td>{{ r.title }}</td>
+			<td>{{ r.characters__name }}</td>
+			<td>{{ r.characters__gender }}</td>
+			<td>{{ r.characters__homeworld__name }}</td>
+			<td>{{ r.characters__homeworld__diameter }}</td>
 		</tr>
 		{% endfor %}
 	</tbody>

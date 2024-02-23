@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from datetime import datetime
 from .forms import SearchPersonForm
 from .models import People, Planets, Movies
+from django.db.models import FilteredRelation, Q
 
 
 def index(request):
@@ -18,12 +19,17 @@ def index(request):
             return choices
 
     def get_results(min_date, max_date, min_diameter, gender):
-        #        min_date = datetime.strptime(min_date, "%Y-%m-%d")
-        #max_date = datetime.strptime(max_date, "%Y-%m-%d")
-        results = (People.objects.filter(gender=gender)
-                                 .filter(movies__release_date__gte=min_date)
-                                 .filter(movies__release_date__lte=max_date)
-                                 .filter(homeworld__diameter__gt=min_diameter))
+        results_characters = (People.objects.filter(gender=gender)
+                                            .filter(homeworld__diameter__gt=min_diameter))
+        results = (Movies.objects.filter(characters__in=results_characters)
+                                 .exclude(release_date__lt=min_date)
+                                 .exclude(release_date__gt=max_date)
+                                 .values('title',
+                                         'characters__gender',
+                                         'characters__name',
+                                         'characters__homeworld__name',
+                                         'characters__homeworld__diameter'))
+        print(results)
         return results
     
     try:
@@ -40,7 +46,6 @@ def index(request):
                     gender=form.cleaned_data['gender']
                 )
                 context['results'] = results
-                print(results)
         form = SearchPersonForm(choices)
         context['form'] = form
     except Exception as e:
